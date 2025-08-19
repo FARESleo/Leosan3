@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>حاسبة التداول المتقدمة</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {font-family: "Segoe UI", sans-serif; background: #0f172a; color: #fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; direction:rtl;}
+    .card {background:#1e293b; padding:25px; border-radius:20px; width:480px; box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+    h2 {text-align:center; margin-bottom:20px; color:#38bdf8;}
+    label {display:block; margin:8px 0 5px;}
+    input, select {width:100%; padding:10px; border:none; border-radius:10px; background:#334155; color:#fff; margin-bottom:10px;}
+    button {width:100%; padding:12px; background:#38bdf8; border:none; border-radius:12px; color:#0f172a; font-weight:bold; cursor:pointer;}
+    .results {display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;}
+    .box {background:#0f172a; padding:12px; border-radius:12px; text-align:center; font-weight:bold;}
+    .profit {color:#22c55e;} .loss {color:#ef4444;} .info {color:#38bdf8;}
+    canvas {margin-top:20px; background:#0f172a; border-radius:12px; padding:10px;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>📊 حاسبة التداول المطورة</h2>
+
+    <label>الهامش المبدئي (IMR %)</label>
+    <input type="number" id="imr" placeholder="مثال: 2">
+
+    <label>هامش الحِفاظ (MMR %)</label>
+    <input type="number" id="mmr" placeholder="مثال: 1">
+
+    <label>المبلغ (USDT)</label>
+    <input type="number" id="capital" placeholder="مثال: 10">
+
+    <label>السعر الحالي</label>
+    <input type="number" id="currentPrice" placeholder="مثال: 1.00">
+
+    <label>سعر الهدف</label>
+    <input type="number" id="targetPrice" placeholder="مثال: 1.05">
+
+    <label>الاتجاه</label>
+    <select id="direction">
+      <option value="long">📈 شراء (Long)</option>
+      <option value="short">📉 بيع (Short)</option>
+    </select>
+
+    <button onclick="calculate()">احسب</button>
+
+    <div class="results">
+      <div class="box info" id="levBox">الرافعة: -</div>
+      <div class="box info" id="marginDiff">فرق الهامش: -</div>
+      <div class="box info" id="priceChangeBox">التغير: -</div>
+      <div class="box profit" id="roiBox">ROI: -</div>
+      <div class="box info" id="pnlBox">PnL: -</div>
+      <div class="box loss" id="liqBox">التصفية: -</div>
+    </div>
+
+    <canvas id="chart" height="120"></canvas>
+  </div>
+
+  <script>
+    let chart;
+    function calculate() {
+      let imr = parseFloat(document.getElementById("imr").value);
+      let mmr = parseFloat(document.getElementById("mmr").value);
+      let capital = parseFloat(document.getElementById("capital").value);
+      let currentPrice = parseFloat(document.getElementById("currentPrice").value);
+      let targetPrice = parseFloat(document.getElementById("targetPrice").value);
+      let direction = document.getElementById("direction").value;
+
+      if ([imr, mmr, capital, currentPrice, targetPrice].some(isNaN)) {
+        alert("⚠️ رجاءً أدخل كل القيم");
+        return;
+      }
+
+      // حساب الرافعة من IMR
+      let leverage = 100 / imr;
+
+      // فرق الأمان بين IMR و MMR
+      let marginDiff = imr - mmr;
+
+      // التغير السعري %
+      let priceChange = ((targetPrice - currentPrice) / currentPrice) * 100;
+      if (direction === "short") priceChange *= -1;
+
+      // ROI %
+      let roiPercent = priceChange * leverage;
+      let pnlValue = capital * (roiPercent / 100);
+
+      // سعر التصفية (تقريبي)
+      let liquidationPrice;
+      if (direction === "long") {
+        liquidationPrice = currentPrice * (1 - (1 / leverage) + mmr / 100);
+      } else {
+        liquidationPrice = currentPrice * (1 + (1 / leverage) - mmr / 100);
+      }
+
+      // تحديث النتائج
+      document.getElementById("levBox").innerHTML = `⚡ ${leverage.toFixed(2)}x`;
+      document.getElementById("marginDiff").innerHTML = `🛡️ ${marginDiff.toFixed(2)}%`;
+      document.getElementById("priceChangeBox").innerHTML = `🔹 ${priceChange.toFixed(2)}%`;
+      document.getElementById("roiBox").innerHTML = `💰 ROI: ${roiPercent.toFixed(2)}%`;
+      document.getElementById("pnlBox").innerHTML = `📈 ${pnlValue.toFixed(2)} USDT`;
+      document.getElementById("liqBox").innerHTML = `⚠️ ${liquidationPrice.toFixed(4)}`;
+
+      // تحديث الرسم البياني
+      let ctx = document.getElementById("chart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["السعر الحالي", "الهدف", "التصفية"],
+          datasets: [{
+            label: "السعر",
+            data: [currentPrice, targetPrice, liquidationPrice],
+            borderColor: "#38bdf8",
+            backgroundColor: "#38bdf8",
+            tension: 0.2,
+            fill: false
+          }]
+        },
+        options: {plugins:{legend:{display:false}}, scales:{x:{ticks:{color:"#fff"}},y:{ticks:{color:"#fff"}}}}
+      });
+    }
+  </script>
+</body>
+</html>
