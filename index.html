@@ -5,54 +5,218 @@
   <title>حاسبة التداول المتقدمة</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {font-family: "Segoe UI", sans-serif; background: #0f172a; color: #fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; direction:rtl;}
-    .card {background:#1e293b; padding:25px; border-radius:20px; width:480px; box-shadow:0 8px 20px rgba(0,0,0,0.3);}
-    h2 {text-align:center; margin-bottom:20px; color:#38bdf8;}
-    label {display:block; margin:8px 0 5px;}
-    input, select {width:100%; padding:10px; border:none; border-radius:10px; background:#334155; color:#fff; margin-bottom:10px;}
-    button {width:100%; padding:12px; background:#38bdf8; border:none; border-radius:12px; color:#0f172a; font-weight:bold; cursor:pointer;}
-    .results {display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;}
-    .box {background:#0f172a; padding:12px; border-radius:12px; text-align:center; font-weight:bold;}
-    .profit {color:#22c55e;} .loss {color:#ef4444;} .info {color:#38bdf8;}
-    canvas {margin-top:20px; background:#0f172a; border-radius:12px; padding:10px;}
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --input-bg: #21262d;
+      --text-color: #c9d1d9;
+      --primary-color: #58a6ff;
+      --success-color: #3fb950;
+      --danger-color: #f85149;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      direction: rtl;
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 20px;
+      width: 500px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid #30363d;
+      max-width: 90%;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 15px 0 5px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .tooltip-icon {
+      font-weight: bold;
+      color: var(--primary-color);
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: 200px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      right: 0;
+      top: 120%;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .tooltip-icon:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--input-bg);
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .btn-group button {
+      flex: 1;
+      padding: 10px;
+      background: var(--input-bg);
+      border: 1px solid #444c56;
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-group button.active, .btn-group button:hover {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #fff;
+    }
+    #calculateBtn {
+      width: 100%;
+      padding: 15px;
+      background: var(--primary-color);
+      border: none;
+      border-radius: 12px;
+      color: var(--bg-color);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #calculateBtn:hover {
+      background: #478bff;
+    }
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+    }
+    .box {
+      background: var(--input-bg);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+    }
+    .box-label {
+      font-size: 12px;
+      color: #8b949e;
+      margin-bottom: 5px;
+    }
+    .box-value {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .profit { color: var(--success-color); } 
+    .loss { color: var(--danger-color); } 
+    .info { color: var(--primary-color); }
+    canvas {
+      margin-top: 25px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid #30363d;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>📊 حاسبة التداول المطورة</h2>
+    <h2>📊 حاسبة التداول المتقدمة</h2>
 
-    <label>الهامش المبدئي (IMR %)</label>
-    <input type="number" id="imr" placeholder="مثال: 2" oninput="updateLeverageOptions()">
+    <label>الهامش المبدئي (IMR %)
+      <span class="tooltip-icon">i<span class="tooltip-text">النسبة المئوية من إجمالي قيمة الصفقة التي تودعها.</span></span>
+    </label>
+    <input type="number" id="imr" placeholder="مثال: 2" oninput="updateUI()">
 
-    <label>هامش الحِفاظ (MMR %)</label>
-    <input type="number" id="mmr" placeholder="مثال: 1" oninput="updateLeverageOptions()">
+    <label>هامش الحِفاظ (MMR %)
+      <span class="tooltip-icon">i<span class="tooltip-text">الحد الأدنى من الهامش المطلوب للحفاظ على الصفقة.</span></span>
+    </label>
+    <input type="number" id="mmr" placeholder="مثال: 1" oninput="updateUI()">
 
-    <label id="leverageLabel" style="display: none;">الرافعة المالية المناسبة</label>
-    <select id="leverageSelect" style="display: none;"></select>
+    <label>اختر الرافعة المالية</label>
+    <div id="leverageButtons" class="btn-group"></div>
 
     <label>المبلغ (USDT)</label>
-    <input type="number" id="capital" placeholder="مثال: 10">
+    <input type="number" id="capital" placeholder="مثال: 10" oninput="updateUI()">
 
     <label>السعر الحالي</label>
-    <input type="number" id="currentPrice" placeholder="مثال: 1.00">
+    <input type="number" id="currentPrice" placeholder="مثال: 1.00" oninput="updateUI()">
 
     <label>سعر الهدف</label>
-    <input type="number" id="targetPrice" placeholder="مثال: 1.05">
+    <input type="number" id="targetPrice" placeholder="مثال: 1.05" oninput="updateUI()">
 
     <label>الاتجاه</label>
-    <select id="direction">
+    <select id="direction" onchange="updateUI()">
       <option value="long">📈 شراء (Long)</option>
       <option value="short">📉 بيع (Short)</option>
     </select>
 
-    <button onclick="calculate()">احسب</button>
-
     <div class="results">
-      <div class="box info" id="marginDiff">فرق الهامش: -</div>
-      <div class="box info" id="priceChangeBox">التغير: -</div>
-      <div class="box profit" id="roiBox">ROI: -</div>
-      <div class="box info" id="pnlBox">PnL: -</div>
-      <div class="box loss" id="liqBox">التصفية: -</div>
+      <div class="box info">
+        <div class="box-label">فرق الهامش</div>
+        <div class="box-value" id="marginDiff">-</div>
+      </div>
+      <div class="box info">
+        <div class="box-label">التغير %</div>
+        <div class="box-value" id="priceChangeBox">-</div>
+      </div>
+      <div class="box profit">
+        <div class="box-label">ROI %</div>
+        <div class="box-value" id="roiBox">-</div>
+      </div>
+      <div class="box info">
+        <div class="box-label">PnL USDT</div>
+        <div class="box-value" id="pnlBox">-</div>
+      </div>
+      <div class="box loss">
+        <div class="box-label">سعر التصفية</div>
+        <div class="box-value" id="liqBox">-</div>
+      </div>
     </div>
 
     <canvas id="chart" height="120"></canvas>
@@ -60,70 +224,87 @@
 
   <script>
     let chart;
-    
+    let selectedLeverage = null;
+
+    function updateUI() {
+      updateLeverageOptions();
+      calculate();
+    }
+
     function updateLeverageOptions() {
-      let imr = parseFloat(document.getElementById("imr").value);
-      let mmr = parseFloat(document.getElementById("mmr").value);
-      
-      let leverageSelect = document.getElementById("leverageSelect");
-      let leverageLabel = document.getElementById("leverageLabel");
-      leverageSelect.innerHTML = "";
-      
+      const imr = parseFloat(document.getElementById("imr").value);
+      const mmr = parseFloat(document.getElementById("mmr").value);
+      const btnContainer = document.getElementById("leverageButtons");
+      btnContainer.innerHTML = "";
+
       if (isNaN(imr) || isNaN(mmr) || imr <= mmr || imr <= 0) {
-        leverageLabel.style.display = "none";
-        leverageSelect.style.display = "none";
+        selectedLeverage = null;
         return;
       }
 
-      let marginDifference = imr - mmr;
-      let maxLeverage = 100 / marginDifference;
+      const marginDifference = imr - mmr;
+      const maxLeverage = 100 / marginDifference;
 
-      let leverageOptions = [
-        { value: 5, text: `5x (مخاطر منخفضة)` },
-        { value: 10, text: `10x (مخاطر منخفضة)` },
-        { value: 20, text: `20x (مخاطر متوسطة)` },
-        { value: 30, text: `30x (مخاطر متوسطة)` },
-        { value: 50, text: `50x (مخاطر عالية)` },
-        { value: 100, text: `100x (مخاطر عالية جدًا)` }
+      const leverageOptions = [
+        { value: 5, text: `5x (منخفضة)` },
+        { value: 10, text: `10x (منخفضة)` },
+        { value: 20, text: `20x (متوسطة)` },
+        { value: 30, text: `30x (متوسطة)` },
+        { value: 50, text: `50x (عالية)` },
+        { value: 100, text: `100x (عالية جداً)` }
       ];
 
       leverageOptions.forEach(option => {
         if (maxLeverage >= option.value) {
-            let opt = document.createElement("option");
-            opt.value = option.value;
-            opt.textContent = option.text;
-            leverageSelect.appendChild(opt);
+          const btn = document.createElement("button");
+          btn.textContent = option.text;
+          btn.value = option.value;
+          btn.onclick = () => {
+            selectedLeverage = option.value;
+            document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            calculate();
+          };
+          btnContainer.appendChild(btn);
         }
       });
       
-      let optMax = document.createElement("option");
-      optMax.value = maxLeverage;
-      optMax.textContent = `${maxLeverage.toFixed(2)}x (الرافعة القصوى المتاحة)`;
-      leverageSelect.appendChild(optMax);
-
-      leverageLabel.style.display = "block";
-      leverageSelect.style.display = "block";
+      const maxBtn = document.createElement("button");
+      maxBtn.textContent = `${maxLeverage.toFixed(2)}x (القصوى)`;
+      maxBtn.value = maxLeverage;
+      maxBtn.onclick = () => {
+        selectedLeverage = maxLeverage;
+        document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+        maxBtn.classList.add('active');
+        calculate();
+      };
+      btnContainer.appendChild(maxBtn);
     }
 
     function calculate() {
-      let leverage = parseFloat(document.getElementById("leverageSelect").value);
-      let imr = parseFloat(document.getElementById("imr").value);
-      let mmr = parseFloat(document.getElementById("mmr").value);
-      let capital = parseFloat(document.getElementById("capital").value);
-      let currentPrice = parseFloat(document.getElementById("currentPrice").value);
-      let targetPrice = parseFloat(document.getElementById("targetPrice").value);
-      let direction = document.getElementById("direction").value;
-
-      if (isNaN(leverage) || [imr, mmr, capital, currentPrice, targetPrice].some(isNaN) || imr <= mmr || imr <= 0) {
-        alert("⚠️ رجاءً اختر الرافعة أولاً ثم أدخل كل القيم.");
+      const imr = parseFloat(document.getElementById("imr").value);
+      const mmr = parseFloat(document.getElementById("mmr").value);
+      const capital = parseFloat(document.getElementById("capital").value);
+      const currentPrice = parseFloat(document.getElementById("currentPrice").value);
+      const targetPrice = parseFloat(document.getElementById("targetPrice").value);
+      const direction = document.getElementById("direction").value;
+      
+      if (selectedLeverage === null || [imr, mmr, capital, currentPrice, targetPrice].some(isNaN) || imr <= mmr || imr <= 0) {
+        document.getElementById("marginDiff").innerHTML = '-';
+        document.getElementById("priceChangeBox").innerHTML = '-';
+        document.getElementById("roiBox").innerHTML = '-';
+        document.getElementById("pnlBox").innerHTML = '-';
+        document.getElementById("liqBox").innerHTML = '-';
+        if (chart) chart.destroy();
         return;
       }
-      
-      let marginDiff = imr - mmr;
-      let priceChange = ((targetPrice - currentPrice) / currentPrice) * 100;
-      if (direction === "short") priceChange *= -1;
-      let roiPercent = priceChange * leverage;
-      let pnlValue = (capital * roiPercent) / 100;
+
+      const leverage = selectedLeverage;
+      const marginDiff = imr - mmr;
+      const priceChange = ((targetPrice - currentPrice) / currentPrice) * 100;
+      const actualPriceChange = direction === "short" ? -priceChange : priceChange;
+      const roiPercent = actualPriceChange * leverage;
+      const pnlValue = (capital * roiPercent) / 100;
 
       let liquidationPrice;
       if (direction === "long") {
@@ -132,11 +313,11 @@
         liquidationPrice = currentPrice * (1 + (marginDiff / 100));
       }
 
-      document.getElementById("marginDiff").innerHTML = `🛡️ فرق الهامش: ${marginDiff.toFixed(2)}%`;
-      document.getElementById("priceChangeBox").innerHTML = `🔹 التغير: ${priceChange.toFixed(2)}%`;
-      document.getElementById("roiBox").innerHTML = `💰 ROI: ${roiPercent.toFixed(2)}%`;
-      document.getElementById("pnlBox").innerHTML = `📈 PnL: ${pnlValue.toFixed(2)} USDT`;
-      document.getElementById("liqBox").innerHTML = `⚠️ التصفية: ${liquidationPrice.toFixed(4)}`;
+      document.getElementById("marginDiff").innerHTML = `${marginDiff.toFixed(2)}%`;
+      document.getElementById("priceChangeBox").innerHTML = `${actualPriceChange.toFixed(2)}%`;
+      document.getElementById("roiBox").innerHTML = `${roiPercent.toFixed(2)}%`;
+      document.getElementById("pnlBox").innerHTML = `${pnlValue.toFixed(2)} USDT`;
+      document.getElementById("liqBox").innerHTML = `${liquidationPrice.toFixed(4)}`;
 
       let ctx = document.getElementById("chart").getContext("2d");
       if (chart) chart.destroy();
@@ -147,15 +328,27 @@
           datasets: [{
             label: "السعر",
             data: [currentPrice, targetPrice, liquidationPrice],
-            borderColor: "#38bdf8",
-            backgroundColor: "#38bdf8",
-            tension: 0.2,
+            borderColor: "var(--primary-color)",
+            backgroundColor: "var(--primary-color)",
+            tension: 0.3,
             fill: false
           }]
         },
-        options: {plugins:{legend:{display:false}}, scales:{x:{ticks:{color:"#fff"}},y:{ticks:{color:"#fff"}}}}
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { color: "var(--text-color)" } },
+            y: { ticks: { color: "var(--text-color)" } }
+          }
+        }
       });
     }
+
+    // Call updateUI on page load to initialize the state
+    window.onload = updateUI;
   </script>
 </body>
 </html>
