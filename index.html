@@ -27,6 +27,14 @@
     <label>هامش الحِفاظ (MMR %)</label>
     <input type="number" id="mmr" placeholder="مثال: 1">
 
+    <div style="display: flex; gap: 10px;">
+      <button onclick="calculateLeverage()" style="flex: 1;">حساب الرافعة</button>
+      <button onclick="calculate()" style="flex: 1;">احسب</button>
+    </div>
+
+    <label id="leverageLabel" style="display: none;">الرافعة المالية المناسبة</label>
+    <select id="leverageSelect" style="display: none;"></select>
+
     <label>المبلغ (USDT)</label>
     <input type="number" id="capital" placeholder="مثال: 10">
 
@@ -42,10 +50,7 @@
       <option value="short">📉 بيع (Short)</option>
     </select>
 
-    <button onclick="calculate()">احسب</button>
-
     <div class="results">
-      <div class="box info" id="levBox">الرافعة: -</div>
       <div class="box info" id="marginDiff">فرق الهامش: -</div>
       <div class="box info" id="priceChangeBox">التغير: -</div>
       <div class="box profit" id="roiBox">ROI: -</div>
@@ -58,7 +63,39 @@
 
   <script>
     let chart;
+    
+    function calculateLeverage() {
+      let imr = parseFloat(document.getElementById("imr").value);
+      let mmr = parseFloat(document.getElementById("mmr").value);
+      
+      if (isNaN(imr) || isNaN(mmr) || imr <= 0 || mmr <= 0) {
+        alert("⚠️ رجاءً أدخل قيم IMR و MMR صحيحة.");
+        return;
+      }
+
+      let leverageSelect = document.getElementById("leverageSelect");
+      leverageSelect.innerHTML = "";
+      
+      let leverageFromIMR = 100 / imr;
+      let optionIMR = document.createElement("option");
+      optionIMR.value = leverageFromIMR;
+      optionIMR.textContent = `${leverageFromIMR.toFixed(2)}x (من IMR)`;
+      leverageSelect.appendChild(optionIMR);
+      
+      let leverageFromMMR = 100 / mmr;
+      if (leverageFromMMR !== leverageFromIMR) {
+        let optionMMR = document.createElement("option");
+        optionMMR.value = leverageFromMMR;
+        optionMMR.textContent = `${leverageFromMMR.toFixed(2)}x (من MMR)`;
+        leverageSelect.appendChild(optionMMR);
+      }
+      
+      document.getElementById("leverageLabel").style.display = "block";
+      leverageSelect.style.display = "block";
+    }
+
     function calculate() {
+      let leverage = parseFloat(document.getElementById("leverageSelect").value);
       let imr = parseFloat(document.getElementById("imr").value);
       let mmr = parseFloat(document.getElementById("mmr").value);
       let capital = parseFloat(document.getElementById("capital").value);
@@ -66,42 +103,30 @@
       let targetPrice = parseFloat(document.getElementById("targetPrice").value);
       let direction = document.getElementById("direction").value;
 
-      if ([imr, mmr, capital, currentPrice, targetPrice].some(isNaN)) {
-        alert("⚠️ رجاءً أدخل كل القيم");
+      if (isNaN(leverage) || [imr, mmr, capital, currentPrice, targetPrice].some(isNaN) || imr <= 0 || mmr <= 0) {
+        alert("⚠️ رجاءً اختر الرافعة أولاً ثم أدخل كل القيم.");
         return;
       }
-
-      // حساب الرافعة من IMR
-      let leverage = 100 / imr;
-
-      // فرق الأمان بين IMR و MMR
+      
       let marginDiff = imr - mmr;
-
-      // التغير السعري %
       let priceChange = ((targetPrice - currentPrice) / currentPrice) * 100;
       if (direction === "short") priceChange *= -1;
-
-      // ROI %
       let roiPercent = priceChange * leverage;
-      let pnlValue = capital * (roiPercent / 100);
+      let pnlValue = (capital * roiPercent) / 100;
 
-      // سعر التصفية (تقريبي)
       let liquidationPrice;
       if (direction === "long") {
-        liquidationPrice = currentPrice * (1 - (1 / leverage) + mmr / 100);
+        liquidationPrice = currentPrice * (1 - (marginDiff / 100));
       } else {
-        liquidationPrice = currentPrice * (1 + (1 / leverage) - mmr / 100);
+        liquidationPrice = currentPrice * (1 + (marginDiff / 100));
       }
 
-      // تحديث النتائج
-      document.getElementById("levBox").innerHTML = `⚡ ${leverage.toFixed(2)}x`;
-      document.getElementById("marginDiff").innerHTML = `🛡️ ${marginDiff.toFixed(2)}%`;
-      document.getElementById("priceChangeBox").innerHTML = `🔹 ${priceChange.toFixed(2)}%`;
+      document.getElementById("marginDiff").innerHTML = `🛡️ فرق الهامش: ${marginDiff.toFixed(2)}%`;
+      document.getElementById("priceChangeBox").innerHTML = `🔹 التغير: ${priceChange.toFixed(2)}%`;
       document.getElementById("roiBox").innerHTML = `💰 ROI: ${roiPercent.toFixed(2)}%`;
-      document.getElementById("pnlBox").innerHTML = `📈 ${pnlValue.toFixed(2)} USDT`;
-      document.getElementById("liqBox").innerHTML = `⚠️ ${liquidationPrice.toFixed(4)}`;
+      document.getElementById("pnlBox").innerHTML = `📈 PnL: ${pnlValue.toFixed(2)} USDT`;
+      document.getElementById("liqBox").innerHTML = `⚠️ التصفية: ${liquidationPrice.toFixed(4)}`;
 
-      // تحديث الرسم البياني
       let ctx = document.getElementById("chart").getContext("2d");
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
