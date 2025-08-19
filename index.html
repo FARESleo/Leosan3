@@ -80,15 +80,9 @@
 
       let leverageOptions = [];
       
-      // نختار خيارات رافعة منطقية بناءً على الرافعة القصوى المحسوبة
-      // على سبيل المثال: 25% و 50% و 75% من الرافعة القصوى
-      let option1 = maxLeverage * 0.25;
-      let option2 = maxLeverage * 0.5;
-      let option3 = maxLeverage * 0.75;
-      
-      leverageOptions.push({ value: option1, text: `${option1.toFixed(2)}x (مخاطر منخفضة)` });
-      leverageOptions.push({ value: option2, text: `${option2.toFixed(2)}x (مخاطر متوسطة)` });
-      leverageOptions.push({ value: option3, text: `${option3.toFixed(2)}x (مخاطر عالية)` });
+      leverageOptions.push({ value: maxLeverage * 0.25, text: `${(maxLeverage * 0.25).toFixed(2)}x (مخاطر منخفضة)` });
+      leverageOptions.push({ value: maxLeverage * 0.5, text: `${(maxLeverage * 0.5).toFixed(2)}x (مخاطر متوسطة)` });
+      leverageOptions.push({ value: maxLeverage * 0.75, text: `${(maxLeverage * 0.75).toFixed(2)}x (مخاطر عالية)` });
       leverageOptions.push({ value: maxLeverage, text: `${maxLeverage.toFixed(2)}x (الرافعة القصوى - مخاطر عالية جداً)` });
 
       leverageOptions.forEach(option => {
