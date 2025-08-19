@@ -53,6 +53,7 @@
       color: var(--primary-color);
       cursor: pointer;
       font-size: 16px;
+      position: relative;
     }
     .tooltip-text {
       visibility: hidden;
@@ -70,6 +71,7 @@
       transition: opacity 0.3s;
       font-size: 12px;
       line-height: 1.5;
+      border: 1px solid #444c56;
     }
     .tooltip-icon:hover .tooltip-text {
       visibility: visible;
@@ -157,7 +159,7 @@
     .info { color: var(--primary-color); }
     canvas {
       margin-top: 25px;
-      background: var(--card-bg);
+      background: transparent; /* Changed to transparent */
       border-radius: 12px;
       padding: 15px;
       border: 1px solid #30363d;
