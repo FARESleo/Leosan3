@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -159,7 +159,7 @@
     .info { color: var(--primary-color); }
     canvas {
       margin-top: 25px;
-      background: transparent; /* Changed to transparent */
+      background-color: #21262d; /* لون خلفية واضح */
       border-radius: 12px;
       padding: 15px;
       border: 1px solid #30363d;
@@ -330,8 +330,8 @@
           datasets: [{
             label: "السعر",
             data: [currentPrice, targetPrice, liquidationPrice],
-            borderColor: "var(--primary-color)",
-            backgroundColor: "var(--primary-color)",
+            borderColor: "#58a6ff", // لون أزرق صريح
+            backgroundColor: "#58a6ff", // لون أزرق صريح
             tension: 0.3,
             fill: false
           }]
@@ -342,8 +342,14 @@
             legend: { display: false }
           },
           scales: {
-            x: { ticks: { color: "var(--text-color)" } },
-            y: { ticks: { color: "var(--text-color)" } }
+            x: { 
+              ticks: { color: "#c9d1d9" }, // لون نص صريح
+              grid: { color: "rgba(201, 209, 217, 0.1)" } // لون خط الشبكة
+            },
+            y: { 
+              ticks: { color: "#c9d1d9" }, // لون نص صريح
+              grid: { color: "rgba(201, 209, 217, 0.1)" } // لون خط الشبكة
+            }
           }
         }
       });
