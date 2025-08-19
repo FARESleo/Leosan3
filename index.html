@@ -78,20 +78,29 @@
       let marginDifference = imr - mmr;
       let maxLeverage = 100 / marginDifference;
 
-      let leverageOptions = [];
-      
-      leverageOptions.push({ value: maxLeverage * 0.25, text: `${(maxLeverage * 0.25).toFixed(2)}x (مخاطر منخفضة)` });
-      leverageOptions.push({ value: maxLeverage * 0.5, text: `${(maxLeverage * 0.5).toFixed(2)}x (مخاطر متوسطة)` });
-      leverageOptions.push({ value: maxLeverage * 0.75, text: `${(maxLeverage * 0.75).toFixed(2)}x (مخاطر عالية)` });
-      leverageOptions.push({ value: maxLeverage, text: `${maxLeverage.toFixed(2)}x (الرافعة القصوى - مخاطر عالية جداً)` });
+      let leverageOptions = [
+        { value: 5, text: `5x (مخاطر منخفضة)` },
+        { value: 10, text: `10x (مخاطر منخفضة)` },
+        { value: 20, text: `20x (مخاطر متوسطة)` },
+        { value: 30, text: `30x (مخاطر متوسطة)` },
+        { value: 50, text: `50x (مخاطر عالية)` },
+        { value: 100, text: `100x (مخاطر عالية جدًا)` }
+      ];
 
       leverageOptions.forEach(option => {
-        let opt = document.createElement("option");
-        opt.value = option.value;
-        opt.textContent = option.text;
-        leverageSelect.appendChild(opt);
+        if (maxLeverage >= option.value) {
+            let opt = document.createElement("option");
+            opt.value = option.value;
+            opt.textContent = option.text;
+            leverageSelect.appendChild(opt);
+        }
       });
       
+      let optMax = document.createElement("option");
+      optMax.value = maxLeverage;
+      optMax.textContent = `${maxLeverage.toFixed(2)}x (الرافعة القصوى المتاحة)`;
+      leverageSelect.appendChild(optMax);
+
       leverageLabel.style.display = "block";
       leverageSelect.style.display = "block";
     }
